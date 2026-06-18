@@ -1,0 +1,138 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden; /* the whole app is non-scrollable; panels scroll internally */
+  color: #F4F1EA; /* light text over the sunset imagery */
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+/* Fallback canvas on <html> only. <body> MUST stay transparent, otherwise its
+   background paints over the fixed -z-10 scene image and hides the photo. */
+html { background: #F7F5F2; }
+body { background: transparent; }
+
+@layer components {
+  .serif { font-family: "Fraunces", Georgia, serif; }
+
+  .glass-panel {
+    @apply rounded-[2rem] border border-white/10 bg-[rgba(26,20,28,0.42)] [backdrop-filter:blur(20px)];
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.12),
+      0 24px 60px -24px rgba(0, 0, 0, 0.6);
+  }
+  .glass {
+    @apply rounded-3xl border border-white/10 bg-[rgba(28,22,30,0.45)] [backdrop-filter:blur(18px)];
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+      0 16px 40px -20px rgba(0, 0, 0, 0.55);
+  }
+  .card {
+    @apply rounded-3xl border border-white/10 bg-[rgba(30,23,32,0.45)] p-5 [backdrop-filter:blur(18px)];
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+      0 14px 34px -20px rgba(0, 0, 0, 0.5);
+  }
+  .btn-primary {
+    @apply rounded-2xl bg-gradient-to-r from-[#F2A65A] to-[#E27D6E] px-5 py-3 font-semibold text-white
+           shadow-[0_10px_30px_-8px_rgba(226,125,110,0.65)] transition hover:brightness-105 active:scale-[0.98] disabled:opacity-50;
+  }
+  .btn-accent {
+    @apply rounded-2xl bg-accent px-5 py-3 font-semibold text-white shadow-[0_8px_24px_-8px_rgba(212,149,106,0.7)]
+           transition hover:brightness-105 active:scale-[0.98] disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply rounded-2xl px-5 py-3 font-medium text-ink/70 transition hover:bg-black/5;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/10 px-3 py-1.5
+           text-sm font-medium text-ink/85 backdrop-blur;
+  }
+  .label { @apply text-sm font-medium text-muted; }
+  .input {
+    @apply w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-3 text-ink outline-none backdrop-blur
+           transition placeholder:text-ink/45 focus:border-[#E27D6E]/60 focus:bg-black/30 focus:ring-4 focus:ring-[#E27D6E]/15;
+  }
+  /* Brand wordmark — solid warm amber (no gradient). */
+  .gradient-text {
+    @apply text-[#EAA46E];
+  }
+}
+
+/* Entrance animation for stacked content. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rise { animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.rise-1 { animation-delay: 0.05s; }
+.rise-2 { animation-delay: 0.12s; }
+.rise-3 { animation-delay: 0.19s; }
+.rise-4 { animation-delay: 0.26s; }
+
+/* Slow float for decorative orbs. */
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(0, -18px) scale(1.04); }
+}
+.float-slow { animation: float 9s ease-in-out infinite; }
+
+input[type="range"] { accent-color: #4A7C6F; }
+
+/* ── Bridge-scape ambient motion ───────────────────────────── */
+@keyframes drift {
+  from { transform: translateX(-60px); }
+  to   { transform: translateX(460px); }
+}
+.cloud-drift { animation: drift linear infinite; }
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; transform: translateX(0); }
+  50%      { opacity: 0.9; transform: translateX(6px); }
+}
+.water-shimmer { animation: shimmer 5s ease-in-out infinite; }
+
+@keyframes glow {
+  0%, 100% { opacity: 0.85; }
+  50%      { opacity: 1; }
+}
+.lantern-glow { animation: glow 2.6s ease-in-out infinite; }
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50%      { opacity: 1; }
+}
+.twinkle { animation: twinkle 3s ease-in-out infinite; }
+
+@keyframes sway {
+  0%, 100% { transform: rotate(-1.2deg); }
+  50%      { transform: rotate(1.2deg); }
+}
+.boat-sway { transform-box: fill-box; transform-origin: center; animation: sway 6s ease-in-out infinite; }
+
+/* Therapeutic aurora drift for the landing backdrop. */
+@keyframes aurora {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  33%  { transform: translate3d(4%, -3%, 0) scale(1.08); }
+  66%  { transform: translate3d(-3%, 2%, 0) scale(0.96); }
+  100% { transform: translate3d(0,0,0) scale(1); }
+}
+.aurora { animation: aurora 18s ease-in-out infinite; }
+
+/* Soft pulse ring around the breathing orb. */
+@keyframes ring {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%      { opacity: 0;    transform: scale(1.6); }
+}
+.breathe-ring { animation: ring 8s ease-in-out infinite; }
+
+/* Hide scrollbars on the in-app centered panel (still scrollable). */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

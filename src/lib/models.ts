@@ -22,6 +22,7 @@ export interface UserDoc {
   biometricEnabled: boolean;
   inactivityLockSeconds: number;
   allowAiTraining: boolean;
+  companionPersonality: string; // tone preset id (see lib/llm PERSONALITIES)
   emergencyContactName: string | null;
   emergencyContactPhone: string | null;
   emergencyContactTelegram: string | null;

@@ -76,7 +76,7 @@ app.post("/auth/register", wrap(async (req, res) => {
   const r = await users.insertOne({
     email: email.toLowerCase(), name: name ?? null, passwordHash: hashPassword(password),
     encSalt, encVerifier: makeVerifier(key), biometricEnabled: true, inactivityLockSeconds: 300,
-    allowAiTraining: false, emergencyContactName: null, emergencyContactPhone: null,
+    allowAiTraining: false, companionPersonality: "warm", emergencyContactName: null, emergencyContactPhone: null,
     emergencyContactTelegram: null, crisisLockedUntil: null, telegramChatId: null, createdAt: now, updatedAt: now,
   });
   const uid = r.insertedId.toHexString();
@@ -213,8 +213,9 @@ app.post("/chat", requireAuth, wrap(async (req, res) => {
   history.push({ role: "user", content: message });
   await msgs.insertOne({ conversationId: convo._id!, role: "USER", contentEnc: encrypt(message, req.auth!.key), flaggedCrisis: false, createdAt: new Date() });
 
+  const me = await (await collections.users()).findOne({ _id: oid(req.auth!.userId)! }, { projection: { companionPersonality: 1 } });
   let reply = "";
-  try { reply = await chatReply(history); }
+  try { reply = await chatReply(history, me?.companionPersonality); }
   catch (e) { console.error("[chat] llm", (e as any)?.message); return res.status(502).json({ error: "assistant_error" }); }
   await msgs.insertOne({ conversationId: convo._id!, role: "ASSISTANT", contentEnc: encrypt(reply, req.auth!.key), flaggedCrisis: false, createdAt: new Date() });
   await convos.updateOne({ _id: convo._id! }, { $set: { updatedAt: new Date() } });
@@ -281,11 +282,11 @@ app.post("/crisis", requireAuth, wrap(async (req, res) => {
 }));
 
 // ── settings ─────────────────────────────────────────────────────────────
-const setSchema = z.object({ name: z.string().max(120).optional(), biometricEnabled: z.boolean().optional(), inactivityLockSeconds: z.number().int().min(30).max(3600).optional(), emergencyContactName: z.string().max(120).optional(), emergencyContactPhone: z.string().max(40).optional(), emergencyContactTelegram: z.string().max(64).optional() });
+const setSchema = z.object({ name: z.string().max(120).optional(), biometricEnabled: z.boolean().optional(), inactivityLockSeconds: z.number().int().min(30).max(3600).optional(), companionPersonality: z.string().max(20).optional(), emergencyContactName: z.string().max(120).optional(), emergencyContactPhone: z.string().max(40).optional(), emergencyContactTelegram: z.string().max(64).optional() });
 
 app.get("/settings", requireAuth, wrap(async (req, res) => {
   const users = await collections.users();
-  const u = await users.findOne({ _id: oid(req.auth!.userId)! }, { projection: { name: 1, email: 1, biometricEnabled: 1, inactivityLockSeconds: 1, allowAiTraining: 1, emergencyContactName: 1, emergencyContactPhone: 1, emergencyContactTelegram: 1 } });
+  const u = await users.findOne({ _id: oid(req.auth!.userId)! }, { projection: { name: 1, email: 1, biometricEnabled: 1, inactivityLockSeconds: 1, allowAiTraining: 1, companionPersonality: 1, emergencyContactName: 1, emergencyContactPhone: 1, emergencyContactTelegram: 1 } });
   res.json({ user: u ? { ...u, _id: undefined } : null });
 }));
 

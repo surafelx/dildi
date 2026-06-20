@@ -57,13 +57,38 @@ STYLE
 export type ChatTurn = { role: "user" | "assistant"; content: string };
 
 /**
+ * Companion personality types. These only adjust TONE — the safety boundaries
+ * (validate-before-challenge, no medical advice, crisis escalation) in
+ * THERAPY_INSTRUCTIONS always apply on top.
+ */
+export interface Personality { id: string; label: string; emoji: string; desc: string; style: string; }
+export const PERSONALITIES: Personality[] = [
+  { id: "warm", label: "Warm", emoji: "🤗", desc: "Gentle, nurturing, soft-spoken.",
+    style: "Be especially warm and tender. Lead with comfort and reassurance. Use soft, caring language." },
+  { id: "direct", label: "Direct", emoji: "🎯", desc: "Straightforward and practical.",
+    style: "Be warm but direct and concise. After validating, offer clear, practical next steps. Don't over-hedge." },
+  { id: "reflective", label: "Reflective", emoji: "🪞", desc: "Thoughtful, asks deep questions.",
+    style: "Be reflective and curious. Mirror back what you hear and ask one thoughtful, open question that invites insight." },
+  { id: "cheerful", label: "Cheerful", emoji: "🌞", desc: "Upbeat and encouraging.",
+    style: "Be upbeat, hopeful, and encouraging — without dismissing hard feelings. Celebrate small wins genuinely." },
+  { id: "grounded", label: "Grounded", emoji: "🪨", desc: "Calm, steady, perspective-giving.",
+    style: "Be calm, steady, and grounding. Offer perspective and a sense of stability. Speak slowly and evenly." },
+];
+export const DEFAULT_PERSONALITY = "warm";
+
+export function personalityStyle(id?: string | null): string {
+  return (PERSONALITIES.find((p) => p.id === id) ?? PERSONALITIES[0]).style;
+}
+
+/**
  * Generate the companion's next reply given prior conversation turns
  * (oldest→newest, already including the new user message at the end).
  */
-export async function chatReply(history: ChatTurn[]): Promise<string> {
+export async function chatReply(history: ChatTurn[], personalityId?: string | null): Promise<string> {
+  const system = `${THERAPY_INSTRUCTIONS}\n\nTONE PREFERENCE (within the rules above):\n${personalityStyle(personalityId)}`;
   const res = await llm.chat.completions.create({
     model: MODEL,
-    messages: [{ role: "system", content: THERAPY_INSTRUCTIONS }, ...history],
+    messages: [{ role: "system", content: system }, ...history],
     temperature: 0.8,
   });
   return res.choices[0]?.message?.content ?? "";

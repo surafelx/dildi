@@ -315,7 +315,7 @@ async function handleRegister(chatId: number, email: string, password: string) {
   const res = await users.insertOne({
     email, name: null, passwordHash: hashPassword(password), encSalt,
     encVerifier: makeVerifier(key), biometricEnabled: true, inactivityLockSeconds: 300,
-    allowAiTraining: false, emergencyContactName: null, emergencyContactPhone: null,
+    allowAiTraining: false, companionPersonality: "warm", emergencyContactName: null, emergencyContactPhone: null,
     emergencyContactTelegram: null, crisisLockedUntil: null, telegramChatId: String(chatId),
     createdAt: now, updatedAt: now,
   });
@@ -399,7 +399,8 @@ async function handleChat(chatId: number, userId: string, key: Buffer, text: str
     history.push({ role: "user", content: text });
 
     await msgs.insertOne({ conversationId: convo._id!, role: "USER", contentEnc: encrypt(text, key), flaggedCrisis: false, createdAt: new Date() });
-    const reply = await chatReply(history);
+    const meDoc = await (await collections.users()).findOne({ _id: oid(userId)! }, { projection: { companionPersonality: 1 } });
+    const reply = await chatReply(history, meDoc?.companionPersonality);
     await msgs.insertOne({ conversationId: convo._id!, role: "ASSISTANT", contentEnc: encrypt(reply, key), flaggedCrisis: false, createdAt: new Date() });
     await convos.updateOne({ _id: convo._id! }, { $set: { updatedAt: new Date() } });
     await render(chatId, `*You:* ${text}\n\n*Dildi:* ${reply}\n\n_Keep typing to continue, or tap Menu._`, BACK);

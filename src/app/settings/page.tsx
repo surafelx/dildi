@@ -8,8 +8,18 @@ import { useAuth } from "@/components/AuthProvider";
 interface Settings {
   name: string | null; email: string;
   biometricEnabled: boolean; inactivityLockSeconds: number; allowAiTraining: boolean;
+  companionPersonality: string | null;
   emergencyContactName: string | null; emergencyContactPhone: string | null; emergencyContactTelegram: string | null;
 }
+
+// Mirrors lib/llm PERSONALITIES (kept here so the client bundle stays server-free).
+const PERSONAS = [
+  { id: "warm", label: "Warm", emoji: "🤗", desc: "Gentle, nurturing" },
+  { id: "direct", label: "Direct", emoji: "🎯", desc: "Practical, clear" },
+  { id: "reflective", label: "Reflective", emoji: "🪞", desc: "Curious, deep" },
+  { id: "cheerful", label: "Cheerful", emoji: "🌞", desc: "Upbeat, hopeful" },
+  { id: "grounded", label: "Grounded", emoji: "🪨", desc: "Calm, steady" },
+];
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -78,6 +88,24 @@ export default function SettingsPage() {
               <Stat n={`${stats.pct}%`} label="Bridge Progress" />
             </div>
           )}
+        </section>
+
+        <section className="card">
+          <h2 className="font-semibold">Companion personality</h2>
+          <p className="label mt-0.5">How your AI companion speaks with you.</p>
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            {PERSONAS.map((p) => {
+              const active = (s.companionPersonality ?? "warm") === p.id;
+              return (
+                <button key={p.id} onClick={() => patch({ companionPersonality: p.id })}
+                  className={`flex flex-col items-center gap-1 rounded-2xl border p-3 text-center transition ${active ? "border-[#E27D6E] bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10"}`}>
+                  <span className="text-2xl">{p.emoji}</span>
+                  <span className="text-sm font-medium">{p.label}</span>
+                  <span className="text-[11px] text-muted">{p.desc}</span>
+                </button>
+              );
+            })}
+          </div>
         </section>
 
         <section className="card">

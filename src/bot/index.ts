@@ -6,7 +6,7 @@ import { newSalt, deriveKey, makeVerifier, checkVerifier, encrypt, decrypt } fro
 import { verifyPassword, hashPassword } from "@/lib/password";
 import { runCrisisCheck } from "@/lib/crisis-handler";
 import { CRISIS_RESOURCES } from "@/lib/crisis";
-import { chatReply, ChatTurn } from "@/lib/llm";
+import { chatReply, ChatTurn, PERSONALITIES } from "@/lib/llm";
 import { audit } from "@/lib/audit";
 import {
   getSession, startSession, touch, endSession, getPending, setPending,
@@ -24,6 +24,7 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 // Register the Telegram command menu (the blue ☰ button next to the input).
 bot.setMyCommands([
   { command: "menu", description: "Open the Dildi menu" },
+  { command: "personality", description: "Choose your companion's tone" },
   { command: "logout", description: "Sign out & wipe your key from memory" },
   { command: "help", description: "How this bot works" },
 ]).catch((e) => console.warn("setMyCommands failed:", e?.message));
@@ -145,6 +146,24 @@ bot.onText(/^\/logout\b/, (msg) => {
   showHome(msg.chat.id);
 });
 
+bot.onText(/^\/personality\b/, (msg) => showPersonality(msg.chat.id));
+
+async function showPersonality(chatId: number) {
+  const s = getSession(chatId);
+  if (!s) return showHome(chatId);
+  const users = await collections.users();
+  const u = await users.findOne({ _id: oid(s.userId)! }, { projection: { companionPersonality: 1 } });
+  const cur = u?.companionPersonality ?? "warm";
+  await render(
+    chatId,
+    `*Companion tone*\n\nHow should I talk with you? (Current: ${PERSONALITIES.find((p) => p.id === cur)?.label ?? "Warm"})`,
+    [
+      ...PERSONALITIES.map((p) => [{ text: `${p.emoji} ${p.label}${p.id === cur ? " ✓" : ""} — ${p.desc}`, callback_data: `persona:${p.id}` }]),
+      [{ text: "← Menu", callback_data: "nav:home" }],
+    ],
+  );
+}
+
 // ── inline button taps ────────────────────────────────────────────────────
 bot.on("callback_query", async (q) => {
   const chatId = q.message?.chat.id;
@@ -156,6 +175,18 @@ bot.on("callback_query", async (q) => {
     const s = getSession(chatId);
     if (s) await clearLock(s.userId);
     return showHome(chatId);
+  }
+
+  if (ns === "persona") {
+    const s = getSession(chatId);
+    if (!s) return showHome(chatId);
+    const valid = PERSONALITIES.some((p) => p.id === arg);
+    if (valid) {
+      await (await collections.users()).updateOne({ _id: oid(s.userId)! }, { $set: { companionPersonality: arg, updatedAt: new Date() } });
+      const p = PERSONALITIES.find((x) => x.id === arg)!;
+      await render(chatId, `${p.emoji} Tone set to *${p.label}*.\n${p.desc}. I'll talk this way from now on.`, BACK);
+    }
+    return;
   }
 
   if (ns === "act") {

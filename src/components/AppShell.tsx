@@ -1,24 +1,39 @@
 "use client";
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import NavBar from "./NavBar";
 import InactivityLock from "./InactivityLock";
 import SceneBackground from "./SceneBackground";
+import { useAuth } from "./AuthProvider";
 
-/**
- * Every page: the clear garden photo fills the background, and the page's
- * content lives on a centered frosted-glass panel. Nothing scrolls the page —
- * a too-tall panel scrolls internally (hidden scrollbar).
- */
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading } = useAuth();
   const isPublic = pathname === "/login" || pathname === "/welcome";
 
-  // Public pages render their own glass layout (login/welcome).
+  // Client-side route guard (replaces the NextAuth middleware).
+  useEffect(() => {
+    if (!loading && !user && !isPublic) router.replace("/welcome");
+  }, [loading, user, isPublic, router]);
+
   if (isPublic) {
     return (
       <>
         <SceneBackground />
         <main className="h-screen overflow-hidden">{children}</main>
+      </>
+    );
+  }
+
+  // Block protected content until auth is resolved.
+  if (loading || !user) {
+    return (
+      <>
+        <SceneBackground />
+        <main className="flex h-screen items-center justify-center">
+          <p className="text-sm text-ink/70">Loading…</p>
+        </main>
       </>
     );
   }

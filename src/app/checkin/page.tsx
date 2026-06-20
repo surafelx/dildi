@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import CrisisLockout from "@/components/CrisisLockout";
@@ -26,7 +27,7 @@ export default function CheckinPage() {
   async function save() {
     if (!sel) return;
     setSaving(true);
-    const res = await fetch("/api/mood", {
+    const res = await api("/mood", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -36,7 +37,7 @@ export default function CheckinPage() {
     });
     // Optional note → save as a short journal line (encrypted, crisis-screened).
     if (res.ok && note.trim()) {
-      const j = await fetch("/api/journal", {
+      const j = await api("/journal", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ body: note, moodTags: [sel.id] }),
       });

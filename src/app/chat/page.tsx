@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
 import CrisisLockout from "@/components/CrisisLockout";
@@ -16,10 +17,10 @@ export default function ChatPage() {
   // Load most recent conversation, if any.
   useEffect(() => {
     (async () => {
-      const list = await fetch("/api/chat").then((r) => r.json());
+      const list = await api("/chat").then((r) => r.json());
       const first = (list.conversations ?? [])[0];
       if (first) {
-        const c = await fetch(`/api/chat?conversationId=${first.id}`).then((r) => r.json());
+        const c = await api(`/chat?conversationId=${first.id}`).then((r) => r.json());
         setConversationId(c.id);
         setMessages(c.messages ?? []);
       }
@@ -34,7 +35,7 @@ export default function ChatPage() {
     setInput("");
     setMessages((m) => [...m, { role: "USER", content: text }]);
     setSending(true);
-    const res = await fetch("/api/chat", {
+    const res = await api("/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ conversationId, message: text }),

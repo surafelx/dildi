@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useState } from "react";
 import { DISTORTIONS } from "@/lib/cbt-program";
 import CrisisLockout from "./CrisisLockout";
@@ -141,7 +142,7 @@ export default function ThoughtRecord({
 
   async function save() {
     setSaving(true);
-    const res = await fetch("/api/thought-records", {
+    const res = await api("/thought-records", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import CrisisLockout from "@/components/CrisisLockout";
@@ -19,7 +20,7 @@ export default function JournalPage() {
   const [locked, setLocked] = useState(false);
 
   async function load() {
-    const r = await fetch("/api/journal");
+    const r = await api("/journal");
     if (r.ok) setEntries((await r.json()).entries ?? []);
   }
   useEffect(() => { load(); }, []);
@@ -27,7 +28,7 @@ export default function JournalPage() {
   async function save() {
     if (!body.trim()) return;
     setSaving(true);
-    const res = await fetch("/api/journal", {
+    const res = await api("/journal", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: title || undefined, body, moodTags: tags }),

@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 
@@ -15,7 +16,7 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/calendar")
+    api("/calendar")
       .then((r) => r.json())
       .then((d) => setEvents(d.events ?? []))
       .finally(() => setLoading(false));

@@ -1,7 +1,9 @@
 "use client";
+import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
-import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
+import { useAuth } from "@/components/AuthProvider";
 
 interface Settings {
   name: string | null; email: string;
@@ -10,6 +12,8 @@ interface Settings {
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const { logout } = useAuth();
   const [s, setS] = useState<Settings | null>(null);
   const [stats, setStats] = useState<{ journals: number; modules: number; pct: number } | null>(null);
   const [savedFlash, setSavedFlash] = useState(false);
@@ -17,15 +21,15 @@ export default function SettingsPage() {
   const [delConfirm, setDelConfirm] = useState("");
 
   useEffect(() => {
-    fetch("/api/settings").then((r) => r.json()).then((d) => setS(d.user));
-    fetch("/api/bridge").then((r) => r.json()).then((b) =>
+    api("/settings").then((r) => r.json()).then((d) => setS(d.user));
+    api("/bridge").then((r) => r.json()).then((b) =>
       setStats({ journals: b.totals?.journals ?? 0, modules: b.totals?.modulesCompleted ?? 0, pct: b.progressPct ?? 0 })
     ).catch(() => {});
   }, []);
 
   async function patch(partial: Partial<Settings>) {
     setS((prev) => (prev ? { ...prev, ...partial } : prev));
-    await fetch("/api/settings", {
+    await api("/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(partial),
@@ -35,7 +39,7 @@ export default function SettingsPage() {
   }
 
   async function exportData() {
-    const res = await fetch("/api/export");
+    const res = await api("/export");
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -44,12 +48,12 @@ export default function SettingsPage() {
   }
 
   async function deleteAccount() {
-    const res = await fetch("/api/delete", {
+    const res = await api("/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password: delPassword, confirm: delConfirm }),
     });
-    if (res.ok) { await signOut({ callbackUrl: "/login" }); }
+    if (res.ok) { logout(); router.push("/welcome"); }
     else alert((await res.json()).error ?? "Could not delete");
   }
 
@@ -139,7 +143,7 @@ export default function SettingsPage() {
           </button>
         </section>
 
-        <button onClick={() => signOut({ callbackUrl: "/login" })} className="btn-ghost w-full">
+        <button onClick={() => { logout(); router.push("/welcome"); }} className="btn-ghost w-full">
           Sign out
         </button>
       </div>

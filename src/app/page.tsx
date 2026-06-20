@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import CrisisLockout from "@/components/CrisisLockout";
@@ -19,8 +20,8 @@ export default function Dashboard() {
   const [locked, setLocked] = useState(false);
 
   useEffect(() => {
-    fetch("/api/crisis").then((r) => r.json()).then((c) => setLocked(!!c.locked)).catch(() => {});
-    fetch("/api/settings").then((r) => r.json()).then((d) => setName(d.user?.name ?? null)).catch(() => {});
+    api("/crisis").then((r) => r.json()).then((c) => setLocked(!!c.locked)).catch(() => {});
+    api("/settings").then((r) => r.json()).then((d) => setName(d.user?.name ?? null)).catch(() => {});
   }, []);
 
   if (locked) return <CrisisLockout onResolve={() => setLocked(false)} />;

@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import ThoughtRecord from "@/components/ThoughtRecord";
@@ -13,13 +14,13 @@ export default function ProgramPage() {
   const [active, setActive] = useState<CbtModule | null>(null);
 
   async function loadProgress() {
-    const r = await fetch("/api/program").then((x) => x.json()).catch(() => ({ completedModules: [] }));
+    const r = await api("/program").then((x) => x.json()).catch(() => ({ completedModules: [] }));
     setCompleted(r.completedModules ?? []);
   }
   useEffect(() => { loadProgress(); }, []);
 
   async function markComplete(moduleId: string) {
-    const r = await fetch("/api/program", {
+    const r = await api("/program", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ moduleId, completed: true }),
     }).then((x) => x.json());

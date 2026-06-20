@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 
 interface CrisisInfo {
@@ -20,14 +21,14 @@ export default function CrisisLockout({
   const [info, setInfo] = useState<CrisisInfo | null>(null);
 
   useEffect(() => {
-    fetch("/api/crisis")
+    api("/crisis")
       .then((r) => r.json())
       .then(setInfo)
       .catch(() => {});
   }, []);
 
   async function acknowledge() {
-    await fetch("/api/crisis", { method: "POST" });
+    await api("/crisis", { method: "POST" });
     onResolve?.();
   }
 

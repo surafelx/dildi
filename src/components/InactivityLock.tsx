@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "./AuthProvider";
 
 /**
  * Biometric re-authentication after inactivity (default 5 min).
@@ -14,7 +14,7 @@ import { useSession } from "next-auth/react";
 const IDLE_MS = 5 * 60 * 1000;
 
 export default function InactivityLock() {
-  const { status } = useSession();
+  const { user } = useAuth();
   const [locked, setLocked] = useState(false);
 
   const resetTimer = useCallback(() => {
@@ -22,7 +22,7 @@ export default function InactivityLock() {
   }, []);
 
   useEffect(() => {
-    if (status !== "authenticated") return;
+    if (!user) return;
     resetTimer();
     const events = ["mousemove", "keydown", "touchstart", "click", "scroll"];
     events.forEach((e) => window.addEventListener(e, resetTimer, { passive: true }));
@@ -34,7 +34,7 @@ export default function InactivityLock() {
       events.forEach((e) => window.removeEventListener(e, resetTimer));
       clearInterval(id);
     };
-  }, [status, resetTimer]);
+  }, [user, resetTimer]);
 
   async function unlock() {
     try {
@@ -57,7 +57,7 @@ export default function InactivityLock() {
     }
   }
 
-  if (status !== "authenticated" || !locked) return null;
+  if (!user || !locked) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/60 backdrop-blur-md">

@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useState } from "react";
 
 const SLIDERS = [
@@ -19,7 +20,7 @@ export default function MoodCheckIn({ onSaved }: { onSaved?: () => void }) {
 
   async function save() {
     setSaving(true);
-    const res = await fetch("/api/mood", {
+    const res = await api("/mood", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(v),

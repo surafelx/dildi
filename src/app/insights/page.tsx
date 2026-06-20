@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import {
@@ -34,7 +35,7 @@ export default function InsightsPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/insights?range=${range}`).then((r) => r.json()).then(setData).finally(() => setLoading(false));
+    api(`/insights?range=${range}`).then((r) => r.json()).then(setData).finally(() => setLoading(false));
   }, [range]);
 
   const moodSeries = (data?.moods ?? []).map((m) => ({

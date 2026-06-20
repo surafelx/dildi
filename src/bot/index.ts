@@ -3,7 +3,7 @@ import TelegramBot, { InlineKeyboardButton } from "node-telegram-bot-api";
 import { collections, toId } from "@/lib/models";
 import { oid } from "@/lib/db";
 import { newSalt, deriveKey, makeVerifier, checkVerifier, encrypt, decrypt } from "@/lib/crypto";
-import { verifyPassword, hashPassword } from "@/lib/auth";
+import { verifyPassword, hashPassword } from "@/lib/password";
 import { runCrisisCheck } from "@/lib/crisis-handler";
 import { CRISIS_RESOURCES } from "@/lib/crisis";
 import { chatReply, ChatTurn } from "@/lib/llm";

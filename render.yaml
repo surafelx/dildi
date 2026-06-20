@@ -1,0 +1,38 @@
+# Render Blueprint for the Dildi API (standalone Express service).
+# Create the service: Render Dashboard → New → Blueprint → point at this repo.
+services:
+  - type: web
+    name: dildi-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm run server
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: PORT
+        value: "10000" # Render sets PORT; server reads process.env.PORT
+      - key: JWT_SECRET
+        generateValue: true
+      # The rest must be set in the Render dashboard (secrets):
+      - key: MONGODB_URI
+        sync: false # e.g. MongoDB Atlas connection string
+      - key: MONGODB_DB
+        value: dildi
+      - key: ENCRYPTION_PEPPER
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false # your frontend origin, e.g. https://dildi.vercel.app
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: openai/gpt-4o
+      - key: GOOGLE_SERVICE_ACCOUNT_EMAIL
+        sync: false
+      - key: GOOGLE_SERVICE_ACCOUNT_KEY_B64
+        sync: false
+      - key: GOOGLE_CALENDAR_ID
+        value: primary
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false

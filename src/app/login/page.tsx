@@ -1,12 +1,13 @@
 "use client";
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import SceneBackground from "@/components/SceneBackground";
 import Logo from "@/components/Logo";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, register } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -19,21 +20,9 @@ export default function LoginPage() {
     setError(null);
     setBusy(true);
     try {
-      if (mode === "register") {
-        const res = await fetch("/api/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, name, password }),
-        });
-        if (!res.ok) {
-          const d = await res.json().catch(() => ({}));
-          throw new Error(d.error?.fieldErrors?.password?.[0] ?? d.error ?? "Could not register");
-        }
-      }
-      const r = await signIn("credentials", { email, password, redirect: false });
-      if (r?.error) throw new Error("Invalid email or password");
+      if (mode === "register") await register(email, name, password);
+      else await login(email, password);
       router.push("/");
-      router.refresh();
     } catch (err: any) {
       setError(err.message ?? "Something went wrong");
     } finally {

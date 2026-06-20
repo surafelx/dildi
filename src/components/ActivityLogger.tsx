@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useState } from "react";
 
 const ACTIVITIES = [
@@ -14,7 +15,7 @@ export default function ActivityLogger({ onLogged }: { onLogged?: () => void }) 
 
   async function log(type: string) {
     setFlash(type);
-    await fetch("/api/activities", {
+    await api("/activities", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ type }),

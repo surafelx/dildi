@@ -1,4 +1,5 @@
 "use client";
+import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import type { BridgeResult } from "@/lib/bridge";
@@ -8,7 +9,7 @@ export default function BridgePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/bridge").then((r) => r.json()).then(setData).finally(() => setLoading(false));
+    api("/bridge").then((r) => r.json()).then(setData).finally(() => setLoading(false));
   }, []);
 
   return (
